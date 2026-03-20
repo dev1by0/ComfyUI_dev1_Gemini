@@ -1,4 +1,4 @@
-# ComfyUI-IF_Gemini
+# ComfyUI-Dev1_Gemini
 Enjoy Google Gemini API for ComfyUI generate images, transcribe audio, sumarize videos. Making a separate implemetation of my old IF_AI tools for easy installation
 <img width="2559" height="1232" alt="image" src="https://github.com/user-attachments/assets/010a3937-bd79-4577-a3b4-fdf0d6f2762d" />
 <img width="1920" height="1075" alt="image" src="https://github.com/user-attachments/assets/a3fb04fd-ace6-4208-8df2-6887501eb879" />
@@ -56,12 +56,12 @@ Enjoy Google Gemini API for ComfyUI generate images, transcribe audio, sumarize 
 1. Clone this repository into your ComfyUI custom nodes folder:
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/if-ai/ComfyUI-IF_Gemini
+git clone https://github.com/dev1by0/ComfyUI_dev1_Gemini
 ```
 
 2. Install the required Python packages:
 ```bash
-cd ComfyUI-IF_Gemini
+cd ComfyUI_dev1_Gemini
 pip install -r requirements.txt
 ```
 
@@ -70,7 +70,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-The Gemini node appears in the "ImpactFrames💥🎞️/LLM" category in the ComfyUI node browser.
+The Gemini node appears in the "Dev1💥🎞️/Gemini" category in the ComfyUI node browser.
 
 3. Restart ComfyUI
 
@@ -130,7 +130,7 @@ If you find this tool useful, please consider supporting my work by:
 - Becoming a patron on Patreon: [Impact Frames Patreon](https://patreon.com/ImpactFrames)
 Thank You!
 
-<img src="https://count.getloli.com/get/@IFGemeini_comfy?theme=moebooru" alt=":IFGemini_comfy" /> 
+<img src="https://count.getloli.com/get/@IFGemeini_comfy?theme=moebooru" alt=":Dev1Gemini_comfy" /> 
 
 
 

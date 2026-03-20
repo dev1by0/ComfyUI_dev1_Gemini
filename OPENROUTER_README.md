@@ -1,4 +1,4 @@
-# OpenRouter Integration for ComfyUI-IF_Gemini
+# OpenRouter Integration for ComfyUI-Dev1_Gemini
 
 This ComfyUI node now supports using OpenRouter as a proxy to access Gemini models. OpenRouter provides access to multiple AI models including Google's Gemini through a unified API.
 
@@ -42,7 +42,7 @@ Create a `.env` file in your ComfyUI root or custom node directory:
 OPENROUTER_API_KEY=sk-or-v1-your-key-here
 GEMINI_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_SITE_URL=https://your-site.com
-OPENROUTER_SITE_NAME=ComfyUI-IF_Gemini
+OPENROUTER_SITE_NAME=ComfyUI-Dev1_Gemini
 ```
 
 ### Method 3: External API Key (Node Input)
@@ -137,7 +137,7 @@ The integration enhances the existing base URL proxy feature:
 Use the included test script to verify your OpenRouter integration:
 
 ```bash
-cd /path/to/ComfyUI/custom_nodes/ComfyUI-IF_Gemini
+cd /path/to/ComfyUI/custom_nodes/ComfyUI-Dev1_Gemini
 python test_openrouter.py
 ```
 
@@ -157,7 +157,7 @@ The test script will:
    ```
 
 2. **ComfyUI Test**: Create a simple workflow:
-   - Add an IF_Gemini node
+   - Add an Dev1_Gemini node
    - Set `api_provider` to "openrouter"
    - Use model `google/gemini-2.0-flash-exp`
    - Add a simple text prompt

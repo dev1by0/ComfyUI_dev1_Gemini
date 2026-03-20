@@ -172,7 +172,7 @@ def create_gemini_client(api_key, api_key_source="unknown", force_openrouter=Fal
         if "openrouter.ai" in base_url:
             # Add OpenRouter-specific headers for better tracking and features
             site_url = os.environ.get("OPENROUTER_SITE_URL", "")
-            site_name = os.environ.get("OPENROUTER_SITE_NAME", "ComfyUI-IF_Gemini")
+            site_name = os.environ.get("OPENROUTER_SITE_NAME", "ComfyUI-Dev1_Gemini")
             
             if site_url:
                 headers["HTTP-Referer"] = site_url
@@ -379,7 +379,7 @@ class UniversalClient:
             return self.client.models
 
 
-class IFGeminiAdvanced:
+class Dev1GeminiAdvanced:
     def __init__(self):
         self.api_key = ""
         self.chat_history = ChatHistory()
@@ -474,25 +474,7 @@ class IFGeminiAdvanced:
                     ["analysis", "generate_text", "generate_images"],
                     {"default": "generate_images"},
                 ),
-                "model_name": (
-                    [
-                        # Standard Gemini models
-                        "gemini-2.5-flash",
-                        "gemini-2.5-pro",
-                        "gemini-2.5-flash-002",
-                        "gemini-2.5-flash-image-preview",
-                        "gemini-2.0-flash-exp",
-                        "gemini-2.0-pro",
-                        "gemini-2.0-flash",
-                        # OpenRouter-specific Gemini models
-                        "google/gemini-2.5-flash",
-                        "google/gemini-2.5-pro",
-                        "google/gemini-2.5-flash-image-preview",
-                        "google/gemini-2.5-flash-image-preview:free",
-                        "google/gemini-2.0-flash-exp",
-                    ],
-                    {"default": "gemini-2.5-flash"},
-                ),
+                "model_name": ("STRING", {"default": "gemini-3-pro-image-preview"}),
                 "temperature": ("FLOAT", {"default": 0.8, "min": 0.0, "max": 1.0, "step": 0.01}),
             },
             "optional": {
@@ -524,13 +506,13 @@ class IFGeminiAdvanced:
     RETURN_TYPES = ("STRING", "IMAGE")
     RETURN_NAMES = ("text", "image")
     FUNCTION = "generate_content"
-    CATEGORY = "ImpactFrames💥🎞️/LLM"
+    CATEGORY = "Dev1💥🎞️/Gemini"
 
     def generate_content(
         self,
         prompt,
         operation_mode="analysis",
-        model_name="gemini-2.5-flash",
+        model_name="gemini-3-pro-image-preview",
         temperature=0.4,
         images=None,
         video=None,
@@ -1087,7 +1069,7 @@ class IFGeminiAdvanced:
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
                     "HTTP-Referer": os.environ.get("OPENROUTER_SITE_URL", ""),
-                    "X-Title": os.environ.get("OPENROUTER_SITE_NAME", "ComfyUI-IF_Gemini")
+                    "X-Title": os.environ.get("OPENROUTER_SITE_NAME", "ComfyUI-Dev1_Gemini")
                 }
 
                 ref_images_b64 = []

@@ -41,7 +41,7 @@ def load_banana_tasks() -> Dict[str, Dict]:
         return {}
 
 
-class IFTaskPromptManager:
+class Dev1TaskPromptManager:
     """
     ComfyUI node to generate task-based prompts for the Gemini node.
     Outputs a simple text string that can be connected to the Gemini prompt input.
@@ -79,7 +79,7 @@ class IFTaskPromptManager:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("prompt",)
     FUNCTION = "generate_prompt"
-    CATEGORY = "ImpactFrames💥🎞️/LLM"
+    CATEGORY = "Dev1💥🎞️/Gemini"
 
     def generate_prompt(
         self, 
@@ -144,7 +144,7 @@ class IFTaskPromptManager:
         return (combined_prompt,)
 
 
-class IFPromptCombiner:
+class Dev1PromptCombiner:
     """
     Simple utility node to combine multiple prompts or add instructions to existing prompts.
     Useful for chaining multiple prompt modifications.
@@ -166,7 +166,7 @@ class IFPromptCombiner:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("combined_prompt",)
     FUNCTION = "combine_prompts"
-    CATEGORY = "ImpactFrames💥🎞️/LLM"
+    CATEGORY = "Dev1💥🎞️/Gemini"
     
     def combine_prompts(
         self,

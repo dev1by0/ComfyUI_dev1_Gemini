@@ -96,7 +96,7 @@ def get_api_key(env_var_name, service_name):
     script_dir = Path(__file__).parent
     possible_locations.append((script_dir / ".env", "custom node directory"))
     
-    # One level up (custom_nodes/ComfyUI-IF_Gemini)
+    # One level up (custom_nodes/ComfyUI-Dev1_Gemini)
     parent_dir = script_dir.parent
     possible_locations.append((parent_dir / ".env", "node package directory"))
     
@@ -217,7 +217,7 @@ def get_base_url():
         script_dir = Path(__file__).parent
         possible_locations.append((script_dir / ".env", "custom node directory"))
         
-        # One level up (custom_nodes/ComfyUI-IF_Gemini)
+        # One level up (custom_nodes/ComfyUI-Dev1_Gemini)
         parent_dir = script_dir.parent
         possible_locations.append((parent_dir / ".env", "node package directory"))
         

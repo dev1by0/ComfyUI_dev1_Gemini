@@ -2,8 +2,8 @@
 import { app } from "/scripts/app.js";
 
 app.registerExtension({
-    name: "Comfy.IFGeminiNode",
-    
+    name: "Comfy.Dev1GeminiNode",
+
     async setup() {
         // Wait for ComfyUI to fully initialize
         const maxAttempts = 10;
@@ -15,10 +15,10 @@ app.registerExtension({
     },
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
-        // Only apply to our IF Gemini Node
-        if (nodeData.name === "IFGeminiNode") {
+        // Only apply to our Dev1 Gemini Node
+        if (nodeData.name === "Dev1GeminiNode") {
             const originalOnNodeCreated = nodeType.prototype.onNodeCreated;
-            
+
             // Enhance the node creation process
             nodeType.prototype.onNodeCreated = function() {
                 if (originalOnNodeCreated) {
@@ -33,19 +33,16 @@ app.registerExtension({
                     };
                 }
 
-                // Store model widget reference for later updates
-                this.modelWidget = this.widgets.find(w => w.name === "model_name");
-
                 // Find and hide original sequential_generation widget
                 const originalSequentialWidget = this.widgets.find(w => w.name === "sequential_generation");
                 let originalSequentialValue = false; // Default value
-                
+
                 if (originalSequentialWidget) {
                     originalSequentialValue = originalSequentialWidget.value; // Get current value
                     originalSequentialWidget.type = "hidden"; // Hide the original widget
-                    console.log(`GeminiNode ${this.id}: Hiding original sequential_generation widget.`);
+                    console.log(`Dev1GeminiNode ${this.id}: Hiding original sequential_generation widget.`);
                 } else {
-                    console.warn(`GeminiNode ${this.id}: Could not find original sequential_generation widget to hide.`);
+                    console.warn(`Dev1GeminiNode ${this.id}: Could not find original sequential_generation widget to hide.`);
                 }
 
                 // Find a good position for the toggle - before batch_count
@@ -66,9 +63,9 @@ app.registerExtension({
                         const hiddenWidget = node.widgets.find(w => w.name === "sequential_generation" && w.type === "hidden");
                         if (hiddenWidget) {
                             hiddenWidget.value = value;
-                            console.log(`GeminiNode ${node.id}: Hidden sequential_generation value set to ${value}`);
+                            console.log(`Dev1GeminiNode ${node.id}: Hidden sequential_generation value set to ${value}`);
                         } else {
-                            console.error(`GeminiNode ${node.id}: Could not find hidden sequential_generation widget to update value!`);
+                            console.error(`Dev1GeminiNode ${node.id}: Could not find hidden sequential_generation widget to update value!`);
                         }
 
                         // Update batch_count label for better UX
@@ -84,19 +81,13 @@ app.registerExtension({
                     { on: "SEQUENCE", off: "BATCH" }
                 );
                 sequentialToggle.serialize = false; // Don't serialize the UI toggle
-                
+
                 // Rename the toggle for display purposes
                 sequentialToggle.name = "sequential_generation";
-                
+
                 // No need to reposition since Python order now matches UI order
                 // The widget is already in the correct position
-                console.log(`GeminiNode ${this.id}: Sequential toggle is in correct position`)
-
-                // Add update models button
-                const updateModelsBtn = this.addWidget("button", "Update Models List", null, () => {
-                    this.updateGeminiModels();
-                });
-                updateModelsBtn.serialize = false;
+                console.log(`Dev1GeminiNode ${this.id}: Sequential toggle is in correct position`)
 
                 // Add verify API key button
                 const verifyApiKeyBtn = this.addWidget("button", "Verify API Key", null, () => {
@@ -112,12 +103,12 @@ app.registerExtension({
                     } else {
                         this.addWidget("text", "api_key_status", "Checking API key...");
                     }
-                    
+
                     // Send request to verify API key with provider
                     fetch("/gemini/check_api_key", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
+                        body: JSON.stringify({
                             api_key: apiKey,
                             api_provider: apiProvider
                         })
@@ -131,8 +122,6 @@ app.registerExtension({
                             } else {
                                 this.addWidget("text", "api_key_status", "✅ " + data.message);
                             }
-                            // After successful verification, update models list
-                            this.updateGeminiModels();
                         } else {
                             if (statusWidget) {
                                 statusWidget.value = "❌ " + data.message;
@@ -150,141 +139,13 @@ app.registerExtension({
                         }
                     });
                 });
-                
+
                 // Configure button
                 verifyApiKeyBtn.serialize = false;
-                
+
                 // Add initial status widget
                 const statusWidget = this.addWidget("text", "api_key_status", "API key not verified");
                 statusWidget.serialize = false;
-
-                // Try to update models list on node creation
-                setTimeout(() => {
-                    this.updateGeminiModels();
-                }, 1000);
-
-                // Listen for changes to the API key input
-                const apiKeyWidget = this.widgets.find(w => w.name === "external_api_key");
-                if (apiKeyWidget) {
-                    const originalCallback = apiKeyWidget.callback;
-                    apiKeyWidget.callback = (v) => {
-                        if (originalCallback) {
-                            originalCallback.call(this, v);
-                        }
-                        // If API key has at least 10 characters, try to update models
-                        if (v && v.length >= 10) {
-                            setTimeout(() => {
-                                this.updateGeminiModels();
-                            }, 1000);
-                        }
-                    };
-                }
-
-                // Listen for changes to operation mode to filter models
-                const operationModeWidget = this.widgets.find(w => w.name === "operation_mode");
-                if (operationModeWidget) {
-                    const originalOpCallback = operationModeWidget.callback;
-                    operationModeWidget.callback = (v) => {
-                        if (originalOpCallback) {
-                            originalOpCallback.call(this, v);
-                        }
-                        // Update models when operation mode changes
-                        setTimeout(() => {
-                            this.updateGeminiModels();
-                        }, 100);
-                    };
-                }
-            };
-
-            // Function to update Gemini models based on operation mode
-            nodeType.prototype.updateGeminiModels = function() {
-                if (!this.modelWidget) {
-                    return;
-                }
-
-                const externalApiKeyWidget = this.widgets.find(w => w.name === "external_api_key");
-                const operationModeWidget = this.widgets.find(w => w.name === "operation_mode");
-                const apiKey = externalApiKeyWidget ? externalApiKeyWidget.value : "";
-                const operationMode = operationModeWidget ? operationModeWidget.value : "analysis";
-
-                // Get models from the backend
-                const apiProviderWidget = this.widgets.find(w => w.name === "api_provider");
-                const apiProvider = apiProviderWidget ? apiProviderWidget.value : "auto";
-                fetch("/gemini/get_models", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ external_api_key: apiKey, api_provider: apiProvider })
-                })
-                .then(response => response.json())
-                .then(allModels => {
-                    if (allModels && allModels.length > 0) {
-                        // Filter models based on operation mode
-                        let filteredModels = this.filterModelsByOperation(allModels, operationMode);
-                        
-                        // Store current model selection
-                        const currentModel = this.modelWidget.value;
-                        
-                        // Update the model widget options
-                        this.modelWidget.options.values = filteredModels;
-                        
-                        // Try to maintain the current model if it exists in filtered list
-                        if (filteredModels.includes(currentModel)) {
-                            this.modelWidget.value = currentModel;
-                        } else {
-                            // Default to gemini-2.5-flash or first model in the list
-                            const defaultModel = filteredModels.includes("gemini-2.5-flash") 
-                                ? "gemini-2.5-flash" 
-                                : filteredModels[0];
-                            this.modelWidget.value = defaultModel;
-                        }
-                        
-                        // Trigger a property change and update the UI
-                        const modelChangedEvent = this.modelWidget.options?.onchange;
-                        if (modelChangedEvent) {
-                            modelChangedEvent.call(this.modelWidget, this.modelWidget.value);
-                        }
-                        
-                        // Add models info to status widget
-                        const statusWidget = this.widgets.find(w => w.name === "api_key_status");
-                        if (statusWidget && statusWidget.value && statusWidget.value.includes("✅")) {
-                            statusWidget.value = `✅ API key is valid (${filteredModels.length}/${allModels.length} models for ${operationMode})`;
-                        }
-                        
-                        this.setDirtyCanvas(true, true);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error updating Gemini models:", error);
-                });
-            };
-
-            // Function to filter models based on operation mode
-            nodeType.prototype.filterModelsByOperation = function(allModels, operationMode) {
-                const imageCapableModels = [
-                    "gemini-2.5-flash-image-preview",
-                    "gemini-2.5-flash", 
-                    "gemini-2.5-flash-002"
-                ];
-                
-                const textModels = allModels.filter(model => !model.includes("image"));
-                const multimodalModels = allModels; // All models support multimodal
-                
-                switch(operationMode) {
-                    case "generate_images":
-                        // For image generation, only show image-capable models
-                        return allModels.filter(model => 
-                            imageCapableModels.some(capable => model.includes(capable.split('-').slice(0, -1).join('-')) || model === capable)
-                        );
-                    
-                    case "analysis":
-                    case "generate_text": 
-                        // For text analysis, show all models but prioritize text-focused ones
-                        return allModels;
-                    
-                    default:
-                        // Default: show all available models
-                        return allModels;
-                }
             };
 
             // Add custom drawing to show generated text below the node
@@ -293,14 +154,14 @@ app.registerExtension({
                 if (originalDrawForeground) {
                     originalDrawForeground.apply(this, arguments);
                 }
-                
+
                 // Display generated text when available
                 if (this.generated_text) {
                     const margin = 10;
                     const textX = this.pos[0] + margin;
                     const textY = this.pos[1] + this.size[1] + 20;
                     const maxWidth = this.size[0] - margin * 2;
-                    
+
                     ctx.save();
                     ctx.font = "12px Arial";
                     ctx.fillStyle = "#CCC";
@@ -312,7 +173,7 @@ app.registerExtension({
             // Add text wrapping helper function
             nodeType.prototype.wrapText = function(ctx, text, x, y, maxWidth, lineHeight) {
                 if (!text) return;
-                
+
                 const words = text.split(' ');
                 let line = '';
                 let posY = y;
@@ -324,7 +185,7 @@ app.registerExtension({
                         ctx.fillText("...", x, posY);
                         break;
                     }
-                    
+
                     const testLine = line + word + ' ';
                     const metrics = ctx.measureText(testLine);
                     const testWidth = metrics.width;
@@ -338,7 +199,7 @@ app.registerExtension({
                         line = testLine;
                     }
                 }
-                
+
                 if (lineCount < maxLines) {
                     ctx.fillText(line, x, posY);
                 }
@@ -350,7 +211,7 @@ app.registerExtension({
                 if (originalOnExecuted) {
                     originalOnExecuted.apply(this, arguments);
                 }
-                
+
                 // Store the text output for display
                 if (message && message.text) {
                     this.generated_text = message.text;
@@ -359,4 +220,4 @@ app.registerExtension({
             };
         }
     }
-}); 
+});

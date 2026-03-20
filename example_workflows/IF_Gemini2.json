@@ -478,7 +478,7 @@
     },
     {
       "id": 48,
-      "type": "IFTaskPromptManager",
+      "type": "Dev1TaskPromptManager",
       "pos": [
         1896.580322265625,
         1023.927490234375
@@ -502,7 +502,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "IFTaskPromptManager"
+        "Node name for S&R": "Dev1TaskPromptManager"
       },
       "widgets_values": [
         "VII.3 Illustration to Commercialized 1/7-Scale Figurine",
@@ -556,7 +556,7 @@
     },
     {
       "id": 49,
-      "type": "IFGeminiNode",
+      "type": "Dev1GeminiNode",
       "pos": [
         2258.181640625,
         524.336669921875
@@ -614,7 +614,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "IFGeminiNode"
+        "Node name for S&R": "Dev1GeminiNode"
       },
       "widgets_values": [
         "Combine maintaining the pose of the subject, the woman from image_1, one and place the logo on image_2 on heswimsuitit over the chest are, making sure it is perfectly wrapped as the underlying ssurfacee and use the background using the reference from image_3 make sure the background and the reference is perfectly integrated as the perspective might need resizing and relight the subject to fit on the background environment \n",
