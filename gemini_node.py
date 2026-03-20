@@ -488,6 +488,18 @@ class Dev1GeminiAdvanced:
                     ["none", "1:1", "16:9", "9:16", "4:3", "3:4", "5:4", "4:5"],
                     {"default": "none"},
                 ),
+                "resolution": (
+                    ["auto", "512", "1K", "2K", "4K"],
+                    {"default": "auto"},
+                ),
+                "person_generation": (
+                    ["auto", "DONT_ALLOW", "ALLOW_ADULT", "ALLOW_ALL"],
+                    {"default": "auto"},
+                ),
+                "prominent_people": (
+                    ["auto", "ALLOW_PROMINENT_PEOPLE", "BLOCK_PROMINENT_PEOPLE"],
+                    {"default": "auto"},
+                ),
                 "api_provider": (
                     ["auto", "gemini", "openrouter"], 
                     {"default": "auto"}
@@ -521,6 +533,9 @@ class Dev1GeminiAdvanced:
         sequential_generation=False,
         batch_count=1,
         aspect_ratio="none",
+        resolution="auto",
+        person_generation="auto",
+        prominent_people="auto",
         api_provider="auto",
         external_api_key="",
         chat_mode=False,
@@ -657,6 +672,9 @@ class Dev1GeminiAdvanced:
                 seed=operation_seed,
                 max_images=max_images,
                 aspect_ratio=aspect_ratio,
+                resolution=resolution,
+                person_generation=person_generation,
+                prominent_people=prominent_people,
                 use_random_seed=use_random_seed,
                 external_api_key=cleaned_external_key,
                 api_key_source=api_key_source,
@@ -888,6 +906,9 @@ class Dev1GeminiAdvanced:
         seed=0,
         max_images=6,
         aspect_ratio="none",
+        resolution="auto",
+        person_generation="auto",
+        prominent_people="auto",
         use_random_seed=False,
         external_api_key="",
         api_key_source=None,
@@ -1146,6 +1167,19 @@ class Dev1GeminiAdvanced:
                     ],
                 }
 
+                # Build image_config for native API support
+                image_gen_config = {}
+                if aspect_ratio != "none":
+                    image_gen_config["aspect_ratio"] = aspect_ratio
+                if resolution != "auto":
+                    image_gen_config["image_size"] = resolution
+                if person_generation != "auto":
+                    image_gen_config["person_generation"] = person_generation
+                if prominent_people != "auto":
+                    image_gen_config["prominent_people"] = prominent_people
+                if image_gen_config:
+                    gen_config_args["image_config"] = types.ImageConfig(**image_gen_config)
+
                 generation_config = types.GenerateContentConfig(**gen_config_args)
 
                 # Process reference images if provided
@@ -1178,17 +1212,20 @@ class Dev1GeminiAdvanced:
                             logger.info(f"Sequential step {i+1}/{batch_count} with seed {current_seed}")
                             
                             # Update config with current seed
-                            step_config = types.GenerateContentConfig(
-                                temperature=temperature,
-                                response_modalities=["Text", "Image"],
-                                seed=current_seed,
-                                safety_settings=[
+                            step_config_args = {
+                                "temperature": temperature,
+                                "response_modalities": ["Text", "Image"],
+                                "seed": current_seed,
+                                "safety_settings": [
                                     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
                                     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
                                     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
                                     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
                                 ],
-                            )
+                            }
+                            if image_gen_config:
+                                step_config_args["image_config"] = types.ImageConfig(**image_gen_config)
+                            step_config = types.GenerateContentConfig(**step_config_args)
                             
                             # Prepare content for this step
                             if i == 0:
@@ -1323,17 +1360,20 @@ class Dev1GeminiAdvanced:
                             current_seed = (seed + i) % (2**31 - 1)
                             
                             # Create batch-specific configuration with the unique seed
-                            batch_config = types.GenerateContentConfig(
-                                temperature=temperature,
-                                response_modalities=["Text", "Image"],
-                                seed=current_seed,
-                                safety_settings=[
+                            batch_config_args = {
+                                "temperature": temperature,
+                                "response_modalities": ["Text", "Image"],
+                                "seed": current_seed,
+                                "safety_settings": [
                                     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
                                     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
                                     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
                                     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
                                 ],
-                            )
+                            }
+                            if image_gen_config:
+                                batch_config_args["image_config"] = types.ImageConfig(**image_gen_config)
+                            batch_config = types.GenerateContentConfig(**batch_config_args)
 
                             # Log the seed being used
                             logger.info(f"Generating batch {i+1} with seed {current_seed}")
@@ -1457,12 +1497,22 @@ class Dev1GeminiAdvanced:
                     resolution_info = f"Resolution: {width}x{height}"
                     
                     # Format the result text
+                    resolution_setting = f"Resolution setting: {resolution}" if resolution != "auto" else ""
+                    person_gen_setting = f"Person generation: {person_generation}" if person_generation != "auto" else ""
+                    prominent_people_setting = f"Prominent people: {prominent_people}" if prominent_people != "auto" else ""
+
                     if sequential_generation:
                         result_text = f"Successfully generated {len(all_generated_images_bytes)} sequential images using {model_name}.\n"
                         result_text += f"Initial prompt: {prompt}\n"
                         result_text += f"Starting seed: {seed}\n"
                         if resolution_info:
                             result_text += f"{resolution_info}\n"
+                        if resolution_setting:
+                            result_text += f"{resolution_setting}\n"
+                        if person_gen_setting:
+                            result_text += f"{person_gen_setting}\n"
+                        if prominent_people_setting:
+                            result_text += f"{prominent_people_setting}\n"
                         
                         # Add text for each step
                         if all_generated_text:
@@ -1474,6 +1524,12 @@ class Dev1GeminiAdvanced:
                         result_text += f"Starting seed: {seed}\n"
                         if resolution_info:
                             result_text += f"{resolution_info}\n"
+                        if resolution_setting:
+                            result_text += f"{resolution_setting}\n"
+                        if person_gen_setting:
+                            result_text += f"{person_gen_setting}\n"
+                        if prominent_people_setting:
+                            result_text += f"{prominent_people_setting}\n"
                         
                         # Add text for each batch
                         if all_generated_text:
