@@ -913,22 +913,8 @@ class Dev1GeminiAdvanced:
 
             # For OpenRouter, model names are expected to have a prefix like "google/".
             # For native Gemini, they do not. We adjust if we are using Gemini and the model is not image-capable.
-            if pre_client_type == "gemini":
-                # List of known official Gemini models that support image generation.
-                image_capable_models = [
-                    "gemini-2.5-flash-image-preview",
-                    "gemini-2.5-flash",
-                    "gemini-2.5-flash-002"
-                ]
-                if model_name not in image_capable_models:
-                    original_model = model_name
-                    model_name = "gemini-2.5-flash-image-preview" # A safe default for Gemini
-                    logger.warning(
-                        f"Model '{original_model}' may not support image generation with the native Gemini client. "
-                        f"Switched to '{model_name}'. If using OpenRouter, ensure you select a model with a 'google/' prefix."
-                    )
-            # For OpenRouter (`pre_client_type == "openrouter"`), we pass the model name as-is,
-            # assuming the user has selected a valid image generation model from the list.
+            # Pass the user-specified model_name directly to the API without validation,
+            # allowing any model name entered in the text field.
 
 
             # Use the API key based on the source specified and provider
